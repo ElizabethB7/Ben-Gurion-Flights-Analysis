@@ -7,7 +7,7 @@ from datetime import datetime
 import plotly.express as px
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
-
+import streamlit.components.v1 as components
 
 # ETL(Extract, Transform, Load) Block:
 @st.cache_data
@@ -87,4 +87,37 @@ today_flight = df_flights[
 st.markdown("<h1 style='text-align: center;'>Ben Gurion Flights Real Time ✈️</h1>", unsafe_allow_html=True)
 st.divider() 
 
-st.metric(label="Total Number of Flights Today", value=len(today_flight))
+# BLOCK 1 
+total = len(today_flight)
+deps = len(today_flight[today_flight['direction'] == 'D'])
+arrs = len(today_flight[today_flight['direction'] == 'A'])
+
+html_card = f"""
+<div style="
+    background-color: #ffffff; 
+    padding: 25px; 
+    border-radius: 15px; 
+    text-align: center; 
+    border: 3px solid #1E88E5; 
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    font-family: sans-serif;">
+    
+    <h3 style="color: #6A5ACD; margin: 0;">Total Flights Today</h3>
+    <h1 style="color: #000000; font-size: 60px; margin: 10px 0;">{total}</h1>
+    
+    <hr style="border: 1px solid #eee; margin: 20px 0;">
+    
+    <div style="display: flex; justify-content: space-around;">
+        <div style="text-align: center;">
+            <h4 style="color: #1E88E5; margin: 0;">Departures 🛫</h4>
+            <h2 style="margin: 5px 0 0 0;">{deps}</h2>
+        </div>
+        <div style="text-align: center;">
+            <h4 style="color: #FF9800; margin: 0;">Arrivals 🛬</h4>
+            <h2 style="margin: 5px 0 0 0;">{arrs}</h2>
+        </div>
+    </div>
+</div>
+"""
+
+components.html(html_card, height=260)
