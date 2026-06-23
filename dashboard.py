@@ -136,35 +136,29 @@ total = len(today_flight)
 deps = len(today_flight[today_flight['direction'] == 'D'])
 arrs = len(today_flight[today_flight['direction'] == 'A'])
 
-html_card = f"""
-<div style="
-    background-color: #ffffff; 
-    padding: 25px; 
-    border-radius: 15px; 
-    text-align: center; 
-    border: 3px solid #1E88E5; 
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    font-family: sans-serif;">
-    
-    <h3 style="color: #6A5ACD; margin: 0;">Total Flights Today</h3>
-    <h1 style="color: #000000; font-size: 60px; margin: 10px 0;">{total}</h1>
-    
-    <hr style="border: 1px solid #eee; margin: 20px 0;">
-    
-    <div style="display: flex; justify-content: space-around;">
-        <div style="text-align: center;">
-            <h4 style="color: #1E88E5; margin: 0;">Departures 🛫</h4>
-            <h2 style="margin: 5px 0 0 0;">{deps}</h2>
-        </div>
-        <div style="text-align: center;">
-            <h4 style="color: #FF9800; margin: 0;">Arrivals 🛬</h4>
-            <h2 style="margin: 5px 0 0 0;">{arrs}</h2>
-        </div>
-    </div>
-</div>
-"""
+# Create columns
+c1, c2, c3 = st.columns(3)
 
-components.html(html_card, height=260)
+# Define style for the metric
+metric_style_dep = "text-align: center; font-size: 24px; font-weight: bold; color: #1E88E5;"
+metric_style_arr = "text-align: center; font-size: 24px; font-weight: bold; color: #FF9800;"
+metric_style_total = "text-align: center; font-size: 24px; font-weight: bold; color: #333333;"
+value_style = "text-align: center; font-size: 40px; font-weight: bold;"
+
+with c1:
+    st.markdown(f"<div style='{metric_style_dep}'>Departures 🛫</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='{value_style}'>{deps}</div>", unsafe_allow_html=True)
+
+with c2:
+    st.markdown(f"<div style='{metric_style_total}'>Total Flights</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='{value_style}'>{total}</div>", unsafe_allow_html=True)
+
+with c3:
+    st.markdown(f"<div style='{metric_style_arr}'>Arrivals 🛬</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='{value_style}'>{arrs}</div>", unsafe_allow_html=True)
+
+st.divider()
+
 
 
 # st.write(f"מספר הטיסות שנמצאו עם מיקום: {len(today_flight.dropna(subset=['lat', 'lon']))}")
