@@ -166,46 +166,5 @@ html_card = f"""
 
 components.html(html_card, height=260)
 
-# map of the flight lines
-st.subheader("Direction Of Popular Destinations:")
-
-# remove duplicates destinations
-unique_destinations = today_flight.dropna(subset=['lat', 'lon']).drop_duplicates(subset=['city_english'])
-
-fig = go.Figure()
-
-# Plot Ben Gurion Airport as origin
-fig.add_trace(go.Scattermapbox(
-    lat=[32.00], lon=[34.87],
-    mode='markers',
-    marker=dict(size=14, color='red', symbol='airport'),
-    hoverinfo='text',
-    text=['Ben Gurion Airport']
-))
-
-# Draw flight paths for all valid destinations
-for i, row in unique_destinations.iterrows():
-    fig.add_trace(go.Scattermapbox(
-        mode='lines',
-        lat=[32.00, row['lat']],
-        lon=[34.87, row['lon']],
-        line=dict(width=1.5, color='black'),
-        opacity=0.5,
-        hoverinfo='name',
-        name=row['city_english']
-    ))
-
-fig.update_layout(
-    mapbox=dict(
-        style="open-street-map",  # This is free and doesn't require a token
-        center=dict(lat=32.00, lon=34.87),
-        zoom=1.5
-    ),
-    height=600,
-    margin={"r":0,"t":0,"l":0,"b":0},
-    showlegend=False
-)
-
-st.plotly_chart(fig, use_container_width=True)
 
 # st.write(f"מספר הטיסות שנמצאו עם מיקום: {len(today_flight.dropna(subset=['lat', 'lon']))}")
