@@ -11,6 +11,9 @@ import streamlit.components.v1 as components
 import plotly.graph_objects as go
 from geopy.geocoders import Nominatim
 
+
+geolocator = Nominatim(user_agent="ben_gurion_dashboard")
+
 # ETL(Extract, Transform, Load) Block:
 @st.cache_data
 def get_flight_data():
@@ -58,6 +61,9 @@ def get_flight_data():
         'CHRMINH': 'flight_status_hebrew'
     }, errors='ignore')
 
+
+
+
     df_flights['terminal'] = pd.to_numeric(df_flights['terminal'], errors='coerce').astype('Int8')
     df_flights['flight_number'] = df_flights['flight_number'].astype(str)
     df_flights['scheduled_time'] = pd.to_datetime(df_flights['scheduled_time'])
@@ -74,10 +80,40 @@ def get_flight_data():
     #return to us the df - LOAD
     return df_flights
 
-# get update data
+
+@st.cache_data(show_spinner=False, persist="disk")
+def get_city_coords(city_name, country_name=None):
+    query = f"{city_name}"
+    if country_name and pd.notna(country_name):
+        query += f", {country_name}"
+    else:
+        query += ", airport"
+    try:
+        location = geolocator.geocode(query, timeout=10)
+        return (location.latitude, location.longitude) if location else (None, None)
+    except:
+        return (None, None)
+
+def enrich_data(df):
+    for index, row in df.iterrows():
+        city = row['city_english']
+        country = row['country_english']
+        
+        coords = get_city_coords(city, country)
+        
+        df.at[index, 'lat'] = coords[0]
+        df.at[index, 'lon'] = coords[1]
+    
+    return df
+
+# Fetch latest flight data
 df_flights = get_flight_data()
 
-# show the current real time data
+# assign new columns - latitude and longitude
+with st.spinner('Enriching map data...'):
+    df_flights = enrich_data(df_flights)
+
+# Filter for real-time flight data.
 now = datetime.now()
 today = now.date()
 
@@ -129,3 +165,49 @@ html_card = f"""
 """
 
 components.html(html_card, height=260)
+
+# map of the flight lines
+st.subheader("Direction Of Popular Destinations:")
+
+# remove duplicates destinations
+unique_destinations = today_flight.dropna(subset=['lat', 'lon']).drop_duplicates(subset=['city_english'])
+
+fig = go.Figure()
+
+fig = px.scatter_mapbox(
+    unique_destinations, 
+    lat='lat', 
+    lon='lon', 
+    hover_name='city_english',
+    zoom=1, 
+    height=600
+)
+
+# Plot Ben Gurion Airport as origin
+fig.add_trace(go.Scattermapbox(
+    lat=[32.00], lon=[34.87],
+    mode='markers',
+    marker=dict(size=12, color='red'),
+    name='Ben Gurion'
+))
+
+# Draw flight paths for all valid destinations
+for i, row in unique_destinations.iterrows():
+    fig.add_trace(go.Scattergeo(
+        lon = [34.87, row['lon']],
+        lat = [32.00, row['lat']],
+        mode = 'lines',
+        name = row['city_english'],
+        line = dict(width=1.5, color='#00ffcc'),
+        opacity = 0.5,
+        hoverinfo = 'name'
+    ))
+
+fig.update_layout(
+    mapbox_style="open-street-map",
+    margin={"r":0,"t":0,"l":0,"b":0},
+    showlegend=False
+)
+st.plotly_chart(fig)
+
+st.write(f"מספר הטיסות שנמצאו עם מיקום: {len(today_flight.dropna(subset=['lat', 'lon']))}")
