@@ -8,6 +8,8 @@ import plotly.express as px
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
+import plotly.graph_objects as go
+from geopy.geocoders import Nominatim
 
 # ETL(Extract, Transform, Load) Block:
 @st.cache_data
@@ -72,9 +74,10 @@ def get_flight_data():
     #return to us the df - LOAD
     return df_flights
 
+# get update data
 df_flights = get_flight_data()
 
-# 1
+# show the current real time data
 now = datetime.now()
 today = now.date()
 
@@ -83,11 +86,16 @@ today_flight = df_flights[
     (df_flights['actual_time'] <= now)
 ]
 
+# title
+current_time = datetime.now().strftime("%H:%M")
 
-st.markdown("<h1 style='text-align: center;'>Ben Gurion Flights Real Time ✈️</h1>", unsafe_allow_html=True)
-st.divider() 
+st.markdown(f"""
+    <h1 style='text-align: center;'>Ben Gurion Flights Real Time ✈️</h1>
+    <h4 style='text-align: center;'>Last Update: {current_time}</h4>
+""", unsafe_allow_html=True)
+st.divider()
 
-# BLOCK 1 
+# BLOCK 1 - Shows the total flights, how many of the flights are departures, and how many are arrivals.
 total = len(today_flight)
 deps = len(today_flight[today_flight['direction'] == 'D'])
 arrs = len(today_flight[today_flight['direction'] == 'A'])
