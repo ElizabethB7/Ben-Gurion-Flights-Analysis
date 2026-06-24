@@ -7,7 +7,6 @@ from datetime import datetime
 def get_flight_data():
     # API - מאגר טיסות - EXTRACT
    
-    # מזהה משאב(מגיע מהאתר)
     resource_id = "e83f763b-b7d7-479e-b172-ae981ddc6de5"
 
     url = f"https://data.gov.il/api/3/action/datastore_search?resource_id={resource_id}"
@@ -19,7 +18,7 @@ def get_flight_data():
         print(f"There is a problem: {response.status_code}")
         return None
     
-    # parsing  the data we got
+    # parsing
     data = response.json()
     
     # convert to DataFrame
